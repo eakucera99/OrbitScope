@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrbitScope</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> 
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.103/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.103/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/satellite.js/dist/satellite.min.js"></script>
+</head>
+<body>
+    <div id="cesiumContainer"></div>
+    <div id="timeControls">
+        <label for="timeSlider">Orbit Time (minutes):</label>
+        <input type="range" id="timeSlider" min="0" max="500" value="0" step="1">
+        <span id="timeValue">0</span>
+    </div>
+    <div id="satelliteDetailsPanel">
+        <h3 id="satelliteName">Satellite Name</h3>
+        <p><strong>Category:</strong> <span id="satelliteCategory"></span></p>
+        <p><strong>Altitude:</strong> <span id="satelliteAltitude"></span> km</p>
+        <p><strong>Velocity:</strong> <span id="satelliteVelocity"></span> km/s</p>
+        <button id="closePanel">Close</button>
+    </div>
+    <div id="animationControls">
+        <button id="playButton">Play</button>
+        <button id="pauseButton">Pause</button>
+        <button id="rewindButton">Rewind</button>
+    </div>
+    <div id="categoryFilters">
+        <button data-category="all">All</button>
+        <button data-category="iss">ISS</button>
+        <button data-category="gps">GPS</button>
+        <button data-category="spacex">SpaceX</button>
+        <button data-category="weather">Weather</button>
+        <button data-category="military">Military</button>
+        <button data-category="communication">Communication</button>
+        <button data-category="navigation">Nav</button>
+        <button data-category="scientific">Scientific</button>
+    </div>
+    <button id="toggleOrbitLines" title="Show/hide satellite orbit paths">Toggle Orbit Lines</button>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+ </html>
+
