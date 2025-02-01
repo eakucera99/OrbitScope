@@ -12,9 +12,9 @@
 <body>
     <div id="cesiumContainer"></div>
     <div id="timeControls">
-        <label for="timeSlider">Orbit Time (minutes):</label>
+        <label for="timeSlider">Orbit Time:</label>
         <input type="range" id="timeSlider" min="0" max="500" value="0" step="1">
-        <span id="timeValue">0</span>
+        <div id="timeValue">0 min</div>
     </div>
     <div id="satelliteDetailsPanel">
         <h3 id="satelliteName">Satellite Name</h3>
@@ -23,23 +23,20 @@
         <p><strong>Velocity:</strong> <span id="satelliteVelocity"></span> km/s</p>
         <button id="closePanel">Close</button>
     </div>
-    <div id="animationControls">
-        <button id="playButton">Play</button>
-        <button id="pauseButton">Pause</button>
-        <button id="rewindButton">Rewind</button>
+    <button id="toggleOrbitLines" title="Click to show/hide orbit paths">Hide Orbit Lines</button>    <div class="dropdown" role="menu">
+        <button class="dropdown-button" aria-haspopup="true" aria-expanded="false">Filter by Category</button>
+        <div class="dropdown-content" role="menu">
+            <a href="#" role="menuitem" data-category="all">All</a>
+            <a href="#" role="menuitem" data-category="iss">ISS</a>
+            <a href="#" role="menuitem" data-category="gps">GPS</a>
+            <a href="#" role="menuitem" data-category="spacex">SpaceX</a>
+            <a href="#" role="menuitem" data-category="weather">Weather</a>
+            <a href="#" role="menuitem" data-category="military">Military</a>
+            <a href="#" role="menuitem" data-category="communication">Communication</a>
+            <a href="#" role="menuitem" data-category="navigation">Nav</a>
+            <a href="#" role="menuitem" data-category="scientific">Scientific</a>
+        </div>
     </div>
-    <div id="categoryFilters">
-        <button data-category="all">All</button>
-        <button data-category="iss">ISS</button>
-        <button data-category="gps">GPS</button>
-        <button data-category="spacex">SpaceX</button>
-        <button data-category="weather">Weather</button>
-        <button data-category="military">Military</button>
-        <button data-category="communication">Communication</button>
-        <button data-category="navigation">Nav</button>
-        <button data-category="scientific">Scientific</button>
-    </div>
-    <button id="toggleOrbitLines" title="Show/hide satellite orbit paths">Toggle Orbit Lines</button>
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
  </html>

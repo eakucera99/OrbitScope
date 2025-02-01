@@ -11,6 +11,7 @@ if (typeof Cesium !== "undefined") {
         timeline: false,
         animation: false,
         geocoder: false,
+        infoBox: false,
     });
 
     // Set the camera to view the entire Earth
@@ -107,10 +108,11 @@ if (typeof Cesium !== "undefined") {
                         trailTime: 500 * 60, // Show the path for the next 500 minutes
                         resolution: 60, // Number of points in the path
                         material: new Cesium.PolylineGlowMaterialProperty({
-                            glowPower: 0.2,
+                            glowPower: 1.0,
                             color: colorMap[category] || Cesium.Color.WHITE,
                         }),
-                        width: 2,
+                        width: 5,
+                        show: true, // Show the path
                     },
                 });
 
@@ -132,7 +134,7 @@ if (typeof Cesium !== "undefined") {
     // Satellite Details Panel
     const detailsPanel = document.getElementById("satelliteDetailsPanel");
     const satelliteName = document.getElementById("satelliteName");
-    const satelliteCategory = document.getElementById("satelliteCategory");
+    const categoryFilters = document.getElementById("categoryFilters");
     const satelliteAltitude = document.getElementById("satelliteAltitude");
     const satelliteVelocity = document.getElementById("satelliteVelocity");
     const closePanelButton = document.getElementById("closePanel");
@@ -147,7 +149,8 @@ if (typeof Cesium !== "undefined") {
 
             // Update details panel
             satelliteName.textContent = satelliteDetails.name;
-            satelliteCategory.textContent = satelliteDetails.category;
+            satelliteCategory.textContent = satelliteDetails.category.getValue();
+            
 
             // Calculate altitude
             const position = pickedObject.id.position.getValue(Cesium.JulianDate.now());
@@ -170,16 +173,57 @@ if (typeof Cesium !== "undefined") {
     });
 
     // Toggle Orbit Lines
-    let orbitLinesVisible = true;
+    let orbitLinesVisible = true; // Default to showing orbit lines
 
     document.getElementById("toggleOrbitLines").addEventListener("click", () => {
         orbitLinesVisible = !orbitLinesVisible;
+        console.log("Toggling orbit lines. Visible:", orbitLinesVisible);
+    
+        // Update the button text and style
+        const toggleButton = document.getElementById("toggleOrbitLines");
+        if (orbitLinesVisible) {
+            toggleButton.textContent = "Hide Orbit Lines";
+            toggleButton.classList.remove("hidden");
+        } else {
+            toggleButton.textContent = "Show Orbit Lines";
+            toggleButton.classList.add("hidden");
+        }
+    
+        // Toggle the visibility of the orbit lines
         viewer.entities.values.forEach((entity) => {
             if (entity.path) {
-                entity.path.show = orbitLinesVisible;
+                entity.path.show.setValue(orbitLinesVisible);
+            }
+        });
+    
+        // Force a scene render
+        viewer.scene.requestRender();
+    });
+
+    // Filter Satellites by Category
+    document.querySelector(".dropdown-button").addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            dropdown.classList.toggle("active");
+        }
+    });
+    
+    document.querySelectorAll(".dropdown-content a").forEach((item) => {
+        item.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                item.click();
             }
         });
     });
+
+    const dropdown = document.querySelector(".dropdown");
+    const dropdownButton = document.querySelector(".dropdown-button");
+
+    dropdownButton.addEventListener("click", () => {
+        dropdown.classList.toggle("active");
+    });
+
 
     // Add slider functionality
     const timeSlider = document.getElementById("timeSlider");
