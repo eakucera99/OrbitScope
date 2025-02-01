@@ -1,5 +1,3 @@
-# Satellite Tracker
-
 A web-based application that visualizes real-time satellite positions and trajectories on a 3D Cesium globe. Users can interact with satellites, view details such as altitude and velocity, and filter them by categories like SpaceX, GPS, Weather, and more.
 
 ## Features
@@ -8,7 +6,7 @@ A web-based application that visualizes real-time satellite positions and trajec
 - **Interactive Satellite Details**: Click on satellites to view name, category, altitude, and velocity.
 - **Category Filters**: Filter satellites by predefined categories such as GPS, weather, military, etc.
 - **Time Slider**: Adjust the time to see satellite positions in the past or future.
-- **Playback Controls**: Play, pause, and rewind the simulation.
+
 
 ## Tech Stack
 
@@ -29,7 +27,7 @@ A web-based application that visualizes real-time satellite positions and trajec
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/satellite-tracker.git
+   git clone https://github.com/eakucera99/satellite-tracker.git
    cd satellite-tracker
    ```
 
@@ -68,17 +66,12 @@ A web-based application that visualizes real-time satellite positions and trajec
 └── README.md              # Project documentation
 ```
 
-## Debugging Tips
-
-- Check if `Cesium` and `Satellite.js` libraries are properly loaded.
-- Verify the `/api/satellites` endpoint returns valid satellite data.
-- Use browser developer tools (`F12`) to debug JavaScript issues.
-
 ## Future Enhancements
 
 - Add user accounts for saving favorite satellites.
 - Integrate more satellite categories.
 - Display satellite imagery or payload details.
+- Fix the categories feature
 
 ## Acknowledgments
 
