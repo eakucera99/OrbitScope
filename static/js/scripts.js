@@ -39,6 +39,54 @@ if (typeof Cesium !== "undefined") {
         scientific: Cesium.Color.MAGENTA,
     };
 
+    let selectedSatellite = null; // Track the currently selected satellite
+
+    // Function to calculate satellite positions for the orbit line
+    function calculateOrbitLinePositions(tleLine1, tleLine2) {
+        const satrec = window.satellite.twoline2satrec(tleLine1, tleLine2);
+        const totalSeconds = 60 * 60 * 6; // 6 hours of simulation
+        const timestepInSeconds = 10; // 10-second intervals
+        const start = Cesium.JulianDate.fromDate(new Date());
+        const positions = [];
+
+        for (let i = 0; i < totalSeconds; i += timestepInSeconds) {
+            const time = Cesium.JulianDate.addSeconds(start, i, new Cesium.JulianDate());
+            const jsDate = Cesium.JulianDate.toDate(time);
+
+            const positionAndVelocity = window.satellite.propagate(satrec, jsDate);
+            if (!positionAndVelocity.position) continue; // Skip invalid positions
+
+            const gmst = window.satellite.gstime(jsDate);
+            const positionGd = window.satellite.eciToGeodetic(positionAndVelocity.position, gmst);
+
+            const longitude = Cesium.Math.toRadians(Cesium.Math.toDegrees(positionGd.longitude));
+            const latitude = Cesium.Math.toRadians(Cesium.Math.toDegrees(positionGd.latitude));
+            const altitude = positionGd.height * 1000; // Convert km to meters
+
+            const position = Cesium.Cartesian3.fromRadians(longitude, latitude, altitude);
+            positions.push(position);
+        }
+
+        return positions;
+    }
+
+    // Function to add an orbit line for a satellite
+    function addOrbitLine(satellite) {
+        const positions = calculateOrbitLinePositions(satellite.tle_line1, satellite.tle_line2);
+
+        const polyline = viewer.entities.add({
+            name: `${satellite.name} Orbit Line`,
+            polyline: {
+                positions: positions,
+                material: Cesium.Color.WHITE,
+                width: 0.5,
+                show: true, // Ensure this is set to true
+            },
+        });
+
+        return polyline;
+    }
+
     // Fetch and visualize satellites
     async function fetchSatellites() {
         try {
@@ -80,6 +128,24 @@ if (typeof Cesium !== "undefined") {
                     positions.push(Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude));
                 }
 
+                // Toggle Orbit Lines Button
+                const toggleOrbitLinesButton = document.getElementById("toggleOrbitLines");
+                let orbitLinesVisible = true; // Track the visibility state of orbit lines
+
+                toggleOrbitLinesButton.addEventListener("click", () => {
+                    orbitLinesVisible = !orbitLinesVisible; // Toggle the state
+
+                    // Update the button text
+                    toggleOrbitLinesButton.textContent = orbitLinesVisible ? "Hide Orbit Lines" : "Show Orbit Lines";
+
+                    // Toggle visibility of all orbit lines
+                    viewer.entities.values.forEach((entity) => {
+                        if (entity.orbitLine) {
+                            entity.orbitLine.polyline.show = orbitLinesVisible;
+                        }
+                    });
+                });
+
                 // Add satellite as an entity
                 const entity = viewer.entities.add({
                     position: positions[0], // Current position
@@ -103,38 +169,21 @@ if (typeof Cesium !== "undefined") {
                         tle_line1: tleLine1,
                         tle_line2: tleLine2,
                     },
-                    path: {
-                        leadTime: 0, // Show the path in real-time
-                        trailTime: 500 * 60, // Show the path for the next 500 minutes
-                        resolution: 60, // Number of points in the path
-                        material: new Cesium.PolylineGlowMaterialProperty({
-                            glowPower: 1.0,
-                            color: colorMap[category] || Cesium.Color.WHITE,
-                        }),
-                        width: 5,
-                        show: true, // Show the path
-                    },
                 });
 
-                // Store entity reference for later updates
-                entity.satelliteData = {
-                    satrec: satrec,
-                    positions: positions,
-                };
+                // Add orbit line for the satellite
+                const orbitLine = addOrbitLine(satellite);
+                entity.orbitLine = orbitLine; // Store the orbit line reference
             });
         } catch (error) {
             console.error("Error fetching satellites:", error);
         }
     }
 
-    // Fetch satellites every minute
-    setInterval(fetchSatellites, 60000);
-    fetchSatellites(); // Initial fetch
-
     // Satellite Details Panel
     const detailsPanel = document.getElementById("satelliteDetailsPanel");
     const satelliteName = document.getElementById("satelliteName");
-    const categoryFilters = document.getElementById("categoryFilters");
+    const satelliteCategory = document.getElementById("satelliteCategory");
     const satelliteAltitude = document.getElementById("satelliteAltitude");
     const satelliteVelocity = document.getElementById("satelliteVelocity");
     const closePanelButton = document.getElementById("closePanel");
@@ -147,10 +196,24 @@ if (typeof Cesium !== "undefined") {
             const satelliteDetails = pickedObject.id.properties;
             pickedObject.id.label.show = true; // Show label on click
 
+            // Hide all orbit lines
+            viewer.entities.values.forEach((entity) => {
+                if (entity.orbitLine) {
+                    entity.orbitLine.polyline.show = false;
+                }
+            });
+
+            // Show the selected satellite's orbit line
+            if (pickedObject.id.orbitLine) {
+                pickedObject.id.orbitLine.polyline.show = true;
+            }
+
+            // Update the selected satellite
+            selectedSatellite = pickedObject.id;
+
             // Update details panel
-            satelliteName.textContent = satelliteDetails.name;
+            satelliteName.textContent = satelliteDetails.name.getValue();
             satelliteCategory.textContent = satelliteDetails.category.getValue();
-            
 
             // Calculate altitude
             const position = pickedObject.id.position.getValue(Cesium.JulianDate.now());
@@ -172,73 +235,22 @@ if (typeof Cesium !== "undefined") {
         detailsPanel.style.display = "none";
     });
 
-    // Toggle Orbit Lines
-    let orbitLinesVisible = true; // Default to showing orbit lines
-
-    document.getElementById("toggleOrbitLines").addEventListener("click", () => {
-        orbitLinesVisible = !orbitLinesVisible;
-        console.log("Toggling orbit lines. Visible:", orbitLinesVisible);
-    
-        // Update the button text and style
-        const toggleButton = document.getElementById("toggleOrbitLines");
-        if (orbitLinesVisible) {
-            toggleButton.textContent = "Hide Orbit Lines";
-            toggleButton.classList.remove("hidden");
-        } else {
-            toggleButton.textContent = "Show Orbit Lines";
-            toggleButton.classList.add("hidden");
-        }
-    
-        // Toggle the visibility of the orbit lines
-        viewer.entities.values.forEach((entity) => {
-            if (entity.path) {
-                entity.path.show.setValue(orbitLinesVisible);
-            }
-        });
-    
-        // Force a scene render
-        viewer.scene.requestRender();
-    });
-
-    // Filter Satellites by Category
-    document.querySelector(".dropdown-button").addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            dropdown.classList.toggle("active");
-        }
-    });
-    
-    document.querySelectorAll(".dropdown-content a").forEach((item) => {
-        item.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                item.click();
-            }
-        });
-    });
-
-    const dropdown = document.querySelector(".dropdown");
-    const dropdownButton = document.querySelector(".dropdown-button");
-
-    dropdownButton.addEventListener("click", () => {
-        dropdown.classList.toggle("active");
-    });
-
-
     // Add slider functionality
     const timeSlider = document.getElementById("timeSlider");
     const timeValue = document.getElementById("timeValue");
 
     timeSlider.addEventListener("input", (event) => {
         const minutes = parseInt(event.target.value);
-        timeValue.textContent = minutes;
+        timeValue.textContent = `${minutes} min`; // Update the displayed value
+
+        const time = new Date(Date.now() + minutes * 60000); // Add minutes to the current time
 
         viewer.entities.values.forEach((entity) => {
-            if (entity.satelliteData) {
-                const { satrec } = entity.satelliteData;
+            if (entity.properties) {
+                const tleLine1 = entity.properties.tle_line1.getValue();
+                const tleLine2 = entity.properties.tle_line2.getValue();
+                const satrec = window.satellite.twoline2satrec(tleLine1, tleLine2);
 
-                // Calculate the new position based on the slider value
-                const time = new Date(Date.now() + minutes * 60000); // Add minutes to the current time
                 const positionAndVelocity = window.satellite.propagate(satrec, time);
                 if (positionAndVelocity.position) {
                     const positionEci = positionAndVelocity.position;
@@ -251,17 +263,47 @@ if (typeof Cesium !== "undefined") {
 
                     // Update the entity's position
                     entity.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
-
-                    // Update the path to show only the portion up to the current time
-                    entity.path.trailTime = minutes * 60; // Convert minutes to seconds
                 }
             }
         });
+
+        // Force a scene render
+        viewer.scene.requestRender();
     });
 
     // Set the initial slider value
     timeSlider.value = 0;
-    timeValue.textContent = 0;
+    timeValue.textContent = "0 min";
+
+    // Fetch satellites every minute
+    setInterval(fetchSatellites, 60000);
+    fetchSatellites(); // Initial fetch
+
+    // Filter Satellites by Category
+    const dropdown = document.querySelector(".dropdown");
+    const dropdownButton = document.querySelector(".dropdown-button");
+
+    dropdownButton.addEventListener("click", () => {
+        dropdown.classList.toggle("active");
+    });
+
+    document.querySelectorAll(".dropdown-content a").forEach((item) => {
+        item.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent the default link behavior
+            const category = item.getAttribute("data-category");
+
+            // Update the dropdown button text
+            dropdownButton.textContent = `Filter by Category: ${category}`;
+
+            // Filter satellites
+            viewer.entities.values.forEach((entity) => {
+                if (entity.properties) {
+                    const entityCategory = entity.properties.category.getValue();
+                    entity.show = category === "all" || entityCategory === category;
+                }
+            });
+        });
+    });
 } else {
     console.error("Cesium library is not loaded. Please check your script tag.");
 }

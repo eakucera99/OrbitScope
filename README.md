@@ -11,7 +11,7 @@ A web-based application that visualizes real-time satellite positions and trajec
 ## Tech Stack
 
 - **Frontend**: CesiumJS, JavaScript, HTML, CSS
-- **Backend**: Flask (Python)
+- **Backend**: Flask (Python), postgreSQL
 - **APIs Used**:
   - [CelesTrak](https://celestrak.com/): TLE data for satellites
   - [Cesium Ion](https://cesium.com/ion/): High-resolution 3D globe rendering
