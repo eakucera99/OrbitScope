@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS
 import requests
 from models import db, Satellite
 from dotenv import load_dotenv
@@ -17,6 +18,7 @@ db_name = os.getenv('DB_NAME')
 
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -25,17 +27,20 @@ migrate = Migrate(app, db)
 
 # TLE Data URLs
 TLE_CATEGORIES = {
-    "spacex": "https://celestrak.com/NORAD/elements/starlink.txt",
-    "iss": "https://celestrak.com/NORAD/elements/stations.txt",
-    "gps": "https://celestrak.com/NORAD/elements/gps-ops.txt",
-    "weather": "https://celestrak.com/NORAD/elements/weather.txt",
-    "military": "https://celestrak.com/NORAD/elements/military.txt",
-    "communication": "https://celestrak.com/NORAD/elements/geo.txt",
-    "navigation": "https://celestrak.com/NORAD/elements/glo-ops.txt",
-    "scientific": "https://celestrak.com/NORAD/elements/science.txt",
-    "misc": "https://celestrak.com/NORAD/elements/other.txt"
+    # "Starlink": "https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=tle", add in again later when needed
+    "Space Stations": "https://celestrak.com/NORAD/elements/stations.txt",
+    "GPS": "https://celestrak.com/NORAD/elements/gps-ops.txt",
+    "Weather": "https://celestrak.com/NORAD/elements/weather.txt",
+    "Defense": "https://celestrak.com/NORAD/elements/military.txt",
+    "Communication": "https://celestrak.com/NORAD/elements/geo.txt",
+    "Navigation": "https://celestrak.com/NORAD/elements/glo-ops.txt",
+    "Scientific": "https://celestrak.com/NORAD/elements/science.txt",
 }
 
+def is_valid_tle(tle_line1, tle_line2):
+    """Check if the TLE lines are valid."""
+    return tle_line1 and tle_line2 and len(tle_line1) > 0 and len(tle_line2) > 0
+    
 def fetch_and_store_tle():
     """Fetches TLE data from CelesTrak and stores it in PostgreSQL."""
     try:
@@ -45,13 +50,16 @@ def fetch_and_store_tle():
                 tle_lines = response.text.strip().split("\n")
                 for i in range(0, len(tle_lines), 3):
                     if i + 2 >= len(tle_lines):
-                        continue  # Ensure we have a full TLE set
+                        continue  
                     
                     name = tle_lines[i].strip()
                     line1 = tle_lines[i + 1].strip()
                     line2 = tle_lines[i + 2].strip()
                     
-                    # Check if satellite already exists
+                    if not is_valid_tle(line1, line2):
+                        print(f"Skipping invalid TLE data for {name}")
+                        continue
+
                     existing_sat = Satellite.query.filter_by(name=name).first()
                     if existing_sat:
                         existing_sat.category = category
@@ -102,5 +110,5 @@ def update_satellites():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-        fetch_and_store_tle()  # Initial TLE load
+        fetch_and_store_tle() 
     app.run(debug=True)
