@@ -4,7 +4,6 @@ OrbitScope is an interactive 3D visualization tool for tracking satellites in re
 
 ## Features
 
-- **Real Time Satellite Tracking**: Visualize satellites orbiting the Earth in real-time.
 - **Satellite Details**: Click on satellites to view name, category, altitude, and velocity.
 - **Real-Time Satellite Tracking**: Displays current positions and predicted paths for various satellites.
 - **Interactive 3D Globe**: Powered by CesiumJS, explore the Earth and satellite paths with smooth zoom, pan, and rotation.
