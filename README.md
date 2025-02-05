@@ -1,16 +1,21 @@
-A web-based application that visualizes real-time satellite positions and trajectories on a 3D Cesium globe. Users can interact with satellites, view details such as altitude and velocity, and filter them by categories like SpaceX, GPS, Weather, and more.
+OrbitScope is an interactive 3D visualization tool for tracking satellites in real time, providing a dynamic and immersive experience for exploring satellite orbits, categories, and details. Whether you're a space enthusiast, educator, or developer, OrbitScope brings the wonders of space to your fingertips.
 
 ## Features
 
+- **Real Time Satellite Tracking**: Visualize satellites orbiting the Earth in real-time.
+- **Satellite Details**: Click on satellites to view name, category, altitude, and velocity.
 - **Real-Time Satellite Tracking**: Displays current positions and predicted paths for various satellites.
-- **Interactive Satellite Details**: Click on satellites to view name, category, altitude, and velocity.
-- **Category Filters**: Filter satellites by predefined categories such as GPS, weather, military, etc.
+- **Interactive 3D Globe**: Powered by CesiumJS, explore the Earth and satellite paths with smooth zoom, pan, and rotation.
+- **Orbit Lines**: Toggle orbit lines for individual satellites to see their paths.
 - **Time Slider**: Adjust the time to see satellite positions in the past or future.
 
+## Screenshots
 
 ## Tech Stack
 
-- **Frontend**: CesiumJS, JavaScript, HTML, CSS
+- **Frontend**: 
+- CesiumJS: For 3D globe and satellite visualization
+- JavaScript, HTML, CSS: For user interface and interactivity
 - **Backend**: Flask (Python), postgreSQL
 - **APIs Used**:
   - [CelesTrak](https://celestrak.com/): TLE data for satellites
@@ -20,7 +25,6 @@ A web-based application that visualizes real-time satellite positions and trajec
 ## Installation
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (for running JavaScript dependencies)
 - [Python](https://www.python.org/) (for Flask backend)
 
 ### Setup
@@ -68,9 +72,9 @@ A web-based application that visualizes real-time satellite positions and trajec
 
 ## Future Enhancements
 
-- Add user accounts for saving favorite satellites.
-- Integrate more satellite categories.
-- Display satellite imagery or payload details.
+- Better Data Rendering Functions: Improve the performance and accuracy of satellite position calculations to support large datasets, such as Starlink satellites.
+- Enhanced Dropdown Menu: Add search and multi-select functionality to the category dropdown for a more intuitive user experience.
+- Historical Data: Enable users to go back in time and visualize satellite positions from past dates.
 - Fix the categories feature
 
 ## Acknowledgments
