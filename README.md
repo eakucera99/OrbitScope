@@ -10,6 +10,8 @@ OrbitScope is an interactive 3D visualization tool for tracking satellites in re
 - **Time Slider**: Adjust the time to see satellite positions in the past or future.
 
 ## Screenshots
+<img width="1470" alt="Screenshot 2025-02-04 at 5 31 27 PM" src="https://github.com/user-attachments/assets/bad8cf6f-ad02-44d9-82b7-271443cf40e9" />
+<img width="1470" alt="Screenshot 2025-02-04 at 5 32 30 PM" src="https://github.com/user-attachments/assets/7eaf0473-6b7f-4e2b-aa97-7d8cba060728" />
 
 ## Tech Stack
 
